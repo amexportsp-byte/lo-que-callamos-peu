@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lo Que Callamos PEU</title>
+<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- MODAL REGLAS -->
+<div id="rulesModal" class="modal">
+  <div class="modal-content">
+    <h2>💜 Bienvenido a Lo Que Callamos PEU 2026</h2>
+    <p>Antes de continuar, acepta nuestras reglas:</p>
+    <ul>
+
+      <li>🚫 No datos personales</li>
+      <li>🚫 No discurso de odio</li>
+      <li>🚫 No imágenes explícitas</li>
+      <li>✅ Respeto siempre</li>
+    </ul>
+    <button onclick="acceptRules()">Aceptar y Entrar</button>
+  </div>
+</div>
+
+<header>
+  <h1>🤫 Lo Que Callamos PEU</h1>
+  <p>Confesiones anónimas sin filtros</p>
+</header>
+
+<section class="post-box">
+  <textarea id="messageInput" placeholder="Escribe tu confesión..."></textarea>
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="createPost()">Publicar Confesión</button>
+</section>
+
+<section id="postsContainer"></section>
+
+<script src="script.js"></script>
+</body>
+</html>

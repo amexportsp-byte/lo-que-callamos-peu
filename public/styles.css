@@ -1,0 +1,257 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #a18cd1, #6a85b6);
+  color: #333;
+}
+
+header {
+  text-align: center;
+  padding: 25px;
+  color: white;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+header p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.post-box {
+  max-width: 600px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  resize: none;
+  font-size: 14px;
+}
+
+input[type="file"] {
+  margin-top: 10px;
+}
+
+button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 15px;
+  border: none;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+.post {
+  max-width: 600px;
+  margin: 15px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.post img {
+  width: 100%;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
+.time {
+  font-size: 12px;
+  color: gray;
+  margin-top: 5px;
+}
+
+.reactions {
+  margin-top: 10px;
+}
+
+.reactions span {
+  margin-right: 15px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.reply-box input {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.reply {
+  background: #f2f2f2;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-content ul {
+  text-align: left;
+  padding-left: 20px;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+/* ========================= */
+/* RESPONSIVE DESIGN */
+/* ========================= */
+
+@media (max-width: 768px) {
+
+  header h1 {
+    font-size: 24px;
+  }
+
+  header p {
+    font-size: 13px;
+  }
+
+  .post-box {
+    width: 95%;
+    margin: 15px auto;
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  .post {
+    width: 95%;
+    margin: 15px auto;
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  textarea {
+    height: 90px;
+    font-size: 13px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .reactions {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .reactions span {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .reply-box input {
+    font-size: 13px;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    border-radius: 15px;
+  }
+}
+.reply-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.reply-input-group input {
+  flex: 1;
+}
+
+.reply-input-group button {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.reply-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.reply-input-group input {
+  flex: 1;
+}
+
+.reply-input-group button {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.replies {
+  margin-top: 10px;
+}
+
+/* Extra pequeño (celulares pequeños tipo 360px) */
+@media (max-width: 400px) {
+
+  header h1 {
+    font-size: 20px;
+  }
+
+  .post-box,
+  .post {
+    padding: 12px;
+  }
+
+  textarea {
+    height: 80px;
+  }
+
+  .reactions span {
+    font-size: 15px;
+  }
+}
