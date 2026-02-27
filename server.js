@@ -1,191 +1,171 @@
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import pkg from "pg";
+import dotenv from "dotenv";
 
-const express = require("express");
-const cors = require("cors");
-const { Pool } = require("pg");
-const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
-const fs = require("fs");
+dotenv.config();
 
+const { Pool } = pkg;
 const app = express();
 
+/* =========================
+   🔐 CONFIAR EN PROXY (IP REAL)
+========================= */
+app.set("trust proxy", true);
+
+/* =========================
+   MIDDLEWARES
+========================= */
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public")); // <-- sirve el index.html
+app.use(express.static("public"));
 
-// =========================
-// CLOUDINARY CONFIG
-// =========================
-cloudinary.config({
-  secure: true,
-});
-
-// =========================
-// MULTER CONFIG
-// =========================
-const upload = multer({ dest: "uploads/" });
-
-// =========================
-// NEON CONNECTION
-// =========================
+/* =========================
+   🔌 CONEXIÓN NEON POSTGRES
+========================= */
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-// =========================
-// TEST DB
-// =========================
-app.get("/test-db", async (req, res) => {
+/* =========================
+   TEST DE CONEXIÓN
+========================= */
+app.get("/health", async (req, res) => {
   try {
-    const result = await pool.query("SELECT NOW()");
-    res.json({
-      mensaje: "Conectado 🚀",
-      hora: result.rows[0].now,
-    });
+    const { rows } = await pool.query("SELECT NOW()");
+    res.json({ ok: true, time: rows[0].now });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error DB" });
+    console.error("❌ Error conexión Neon:", err.message);
+    res.status(500).json({ error: "Neon no conecta" });
   }
 });
 
-// =========================
-// CREAR POST
-// =========================
-app.post("/posts", async (req, res) => {
-  const { content } = req.body;
+/* =========================
+   OBTENER ÚLTIMO POST
+========================= */
+app.get("/posts/latest", async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT id, content
+      FROM posts
+      WHERE content IS NOT NULL
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
 
-  if (!content) return res.status(400).json({ error: "Contenido requerido" });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "No hay posts" });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("❌ Error obteniendo último post:", err);
+    res.status(500).json({ error: "Error cargando post" });
+  }
+});
+
+/* =========================
+   SIGUIENTE POST NO RESPONDIDO
+========================= */
+app.get("/posts/next/:userId", async (req, res) => {
+  const { userId } = req.params;
 
   try {
-    const result = await pool.query(
-      "INSERT INTO posts (content) VALUES ($1) RETURNING *",
-      [content]
+    const { rows } = await pool.query(
+      `
+      SELECT p.id, p.content
+      FROM posts p
+      WHERE p.content IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM post_publication_survey s
+        WHERE s.post_id = p.id
+        AND s.user_id = $1
+      )
+      ORDER BY p.created_at ASC
+      LIMIT 1
+      `,
+      [userId]
     );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error creando post" });
+
+    if (rows.length === 0) {
+      return res.json({ done: true });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("❌ Error obteniendo siguiente post:", err);
+    res.status(500).json({ error: "Error obteniendo post" });
   }
 });
 
-// =========================
-// OBTENER POSTS
-// =========================
-app.get("/posts", async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM posts ORDER BY created_at DESC"
-  );
-  res.json(result.rows);
-});
+/* =========================
+   GUARDAR RESPUESTA + IP + UA
+========================= */
+app.post("/survey", async (req, res) => {
+  const { post_id, user_id, published_by_user } = req.body;
 
-// =========================
-// SUBIR IMAGEN
-// =========================
-app.post("/upload-image", upload.single("image"), async (req, res) => {
-  const { post_id } = req.body;
+  if (!post_id || !user_id || published_by_user === undefined) {
+    return res.status(400).json({ error: "Datos incompletos" });
+  }
 
-  if (!req.file)
-    return res.status(400).json({ error: "No se envió imagen" });
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.ip ||
+    req.socket.remoteAddress;
+
+  const userAgent = req.headers["user-agent"] || "desconocido";
 
   try {
-    const uploadResult = await cloudinary.uploader.upload(req.file.path);
-
-    fs.unlinkSync(req.file.path);
-
-    const dbResult = await pool.query(
-      "INSERT INTO images (post_id, image_url, public_id) VALUES ($1, $2, $3) RETURNING *",
-      [post_id, uploadResult.secure_url, uploadResult.public_id]
+    await pool.query(
+      `
+      INSERT INTO post_publication_survey
+      (post_id, user_id, published_by_user, ip_address, user_agent)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (post_id, user_id) DO NOTHING
+      `,
+      [post_id, user_id, published_by_user, ip, userAgent]
     );
 
-    res.json(dbResult.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error subiendo imagen" });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("❌ Error guardando encuesta:", err);
+    res.status(500).json({ error: "Error guardando encuesta" });
   }
 });
 
-// =========================
-// OBTENER IMAGENES
-// =========================
-app.get("/images/:postId", async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM images WHERE post_id = $1",
-    [req.params.postId]
-  );
-  res.json(result.rows);
-});
-
-// =========================
-// CREAR COMENTARIO
-// =========================
-app.post("/comments", async (req, res) => {
-  const { post_id, content } = req.body;
-
+/* =========================
+   PANEL ADMIN (OPCIONAL)
+========================= */
+app.get("/admin/responses", async (req, res) => {
   try {
-    const result = await pool.query(
-      "INSERT INTO comments (post_id, content) VALUES ($1, $2) RETURNING *",
-      [post_id, content]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: "Error creando comentario" });
+    const { rows } = await pool.query(`
+      SELECT
+        p.content AS post,
+        s.published_by_user,
+        s.ip_address,
+        s.user_agent,
+        s.user_id,
+        s.created_at
+      FROM post_publication_survey s
+      JOIN posts p ON p.id = s.post_id
+      ORDER BY s.created_at DESC
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error admin:", err);
+    res.status(500).json({ error: "Error cargando respuestas" });
   }
 });
 
-// =========================
-// OBTENER COMENTARIOS
-// =========================
-app.get("/comments/:postId", async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at ASC",
-    [req.params.postId]
-  );
-  res.json(result.rows);
-});
-
-// =========================
-// REACCIONAR
-// =========================
-app.post("/reactions", async (req, res) => {
-  const { post_id, emoji } = req.body;
-
-  const existing = await pool.query(
-    "SELECT * FROM reactions WHERE post_id = $1 AND emoji = $2",
-    [post_id, emoji]
-  );
-
-  if (existing.rows.length > 0) {
-    const updated = await pool.query(
-      "UPDATE reactions SET count = count + 1 WHERE post_id = $1 AND emoji = $2 RETURNING *",
-      [post_id, emoji]
-    );
-    return res.json(updated.rows[0]);
-  } else {
-    const created = await pool.query(
-      "INSERT INTO reactions (post_id, emoji, count) VALUES ($1, $2, 1) RETURNING *",
-      [post_id, emoji]
-    );
-    return res.json(created.rows[0]);
-  }
-});
-
-// =========================
-// OBTENER REACCIONES
-// =========================
-app.get("/reactions/:postId", async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM reactions WHERE post_id = $1",
-    [req.params.postId]
-  );
-  res.json(result.rows);
-});
-
-// =========================
-// START SERVER
-// =========================
+/* =========================
+   START SERVER
+========================= */
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor activo en http://localhost:${PORT}`);
 });

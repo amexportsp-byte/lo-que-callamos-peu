@@ -1,43 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lo Que Callamos PEU</title>
-<link rel="stylesheet" href="styles.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Encuesta de Publicación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- =========================
+       ESTILOS
+  ========================= -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .card {
+      background: #ffffff;
+      color: #333;
+      width: 100%;
+      max-width: 420px;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      animation: fadeIn 0.5s ease;
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #1f2937;
+    }
+
+    #postContent {
+      background: #f3f4f6;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 15px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-si {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+    }
+
+    .btn-no {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+    }
+
+    button:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    #mensaje {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #16a34a;
+    }
+
+    .loading {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 480px) {
+      .card {
+        margin: 16px;
+        padding: 24px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- MODAL REGLAS -->
-<div id="rulesModal" class="modal">
-  <div class="modal-content">
-    <h2>💜 Bienvenido a Lo Que Callamos PEU 2026</h2>
-    <p>Antes de continuar, acepta nuestras reglas:</p>
-    <ul>
+  <div class="card">
+    <h2>¿Tú publicaste este post?</h2>
 
-      <li>🚫 No datos personales</li>
-      <li>🚫 No discurso de odio</li>
-      <li>🚫 No imágenes explícitas</li>
-      <li>✅ Respeto siempre</li>
-    </ul>
-    <button onclick="acceptRules()">Aceptar y Entrar</button>
+    <p id="postContent" class="loading">
+      Cargando publicación...
+    </p>
+
+    <div class="buttons">
+      <button class="btn-si" onclick="responder(true)">Sí</button>
+      <button class="btn-no" onclick="responder(false)">No</button>
+    </div>
+
+    <p id="mensaje"></p>
   </div>
-</div>
 
-<header>
-  <h1>🤫 Lo Que Callamos PEU</h1>
-  <p>Confesiones anónimas sin filtros</p>
-</header>
-
-<section class="post-box">
-  <textarea id="messageInput" placeholder="Escribe tu confesión..."></textarea>
-  <input type="file" id="imageInput" accept="image/*">
-  <button onclick="createPost()">Publicar Confesión</button>
-</section>
-
-<section id="postsContainer"></section>
-
-<script src="script.js"></script>
+  <!-- TU JS EXISTENTE -->
+  <script src="script.js"></script>
 </body>
 </html>
